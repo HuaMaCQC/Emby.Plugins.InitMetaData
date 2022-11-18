@@ -48,7 +48,7 @@ namespace Emby.Plugins.InitMetaData
 
                 if (Regex.IsMatch(newNames[0], @"[0-99]"))
                 {
-                    result.Item.Name = "第 " + newNames[0] + "季";
+                    result.Item.Name = "第 " + newNames[0] + " 季";
                 }
                 else
                 {

@@ -39,6 +39,15 @@ namespace Emby.Plugins.InitMetaData
             return str.Replace("[", "").Replace("]", "");
         }
 
+        public static string Replace05(string str)
+        {
+            return str.Replace(" -", "第").Replace(" ", "集");
+        }
+        public static string Replace06(string str)
+        {
+            return str.Replace(" - ", "第").Replace(" ", "集");
+        }
+
         public static string NoReplace(string str)
         {
             return str;
@@ -123,6 +132,12 @@ namespace Emby.Plugins.InitMetaData
             new INameRule(@"\[Information[A-Za-z0-9]+\]", Replace04),
             new INameRule(@"\[Information-[A-Za-z0-9]+\]", Replace04),
             new INameRule(@"\[InformationA-Za-z0-9]+\]", Replace04),
+
+            new INameRule(@"\[[0-9]\]", BasicReplace),
+            new INameRule(@" -[0-9][0-9] ", Replace05),
+            new INameRule(@" - [0-9][0-9] ", Replace06),
+            new INameRule(@" -[0-9] ", Replace05),
+            new INameRule(@" - [0-9] ", Replace06),
         };
     }
 }

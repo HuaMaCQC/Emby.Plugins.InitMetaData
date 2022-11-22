@@ -57,15 +57,6 @@ namespace Emby.Plugins.InitMetaData
                     result.Item.AddStudio(StudioRule.Rule[i][1]);
                 }
             }
-                
-
-            for (int i = 0; i< TagRule.Rule.Length; i++)
-            {
-                if (Regex.IsMatch(newName, TagRule.Rule[i][0]))
-                {
-                    result.Item.AddTag(TagRule.Rule[i][1]);
-                }
-            }
 
             return result;
         }

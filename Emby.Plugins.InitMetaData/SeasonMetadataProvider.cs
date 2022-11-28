@@ -25,16 +25,40 @@ namespace Emby.Plugins.InitMetaData
         {
             var result = new MetadataResult<Season>();
             result.Item = new Season();
+
             result.Item.LockedFields = new MetadataFields[] {
                     MetadataFields.Genres,
                     MetadataFields.Tags,
                     MetadataFields.Name,
                     MetadataFields.SortName,
                 };
+            
+            if(result.Item.BeforeMetadataRefresh(true))
+            {
+                result.Item.LockedFields = new MetadataFields[] {
+                    MetadataFields.Genres,
+                    MetadataFields.Tags,
+                };
+
+                Logger.Info("測試1" + info.Name);
+                Logger.Info("測試1" + info.Id.ToString());
+
+                string[] s = info.Path.Split('\\');
+
+                if (s.Length == 1)
+                {
+                    s = info.Path.Split('/');
+                }
+
+                string newName = s[s.Length - 1];
+                result.Item.Name = newName;
+
+                return result;
+            }
 
             if (string.IsNullOrEmpty(info.Path))
             {
-                result.Item.Name = "全集";
+                result.Item.SeriesName = "全集";
             } 
             else
             {
@@ -46,17 +70,33 @@ namespace Emby.Plugins.InitMetaData
                 }
 
                 string newName = s[s.Length - 1];
+
                 newName = newName.Replace("season", "");
-
+                newName = newName.Replace("s", "");
+                newName = newName.Replace("S", "");
+                
                 string[] newNames = newName.Split('(');
-
-                if (Regex.IsMatch(newNames[0], @"[0-99]"))
+                if (Regex.IsMatch(newNames[0], @"^ [0-99]") || Regex.IsMatch(newNames[0], @"^[0-99]"))
                 {
-                    result.Item.Name = "第 " + newNames[0] + " 季";
+                    Logger.Info(info.Name);
+                    Logger.Info(info.Id.ToString());
+
+
+                    string[] n = newNames[0].Trim(' ').Split('-');
+                    string newItemName = "第 " + n[0] + " 季";
+
+                    for (int i = 1; i < n.Length; i++)
+                    {
+                        newItemName += (" " + n[i]);
+                    }
+
+                    result.BaseItem.Name = newItemName;
+                    result.Item.Name = newItemName;
                     result.Item.SortName = newNames[0];
                 }
                 else
                 {
+                    
                     result.Item.Name = newNames[0].Trim(' ');
                     result.Item.SortName = newNames[0].Trim(' ');
                 }
@@ -72,7 +112,6 @@ namespace Emby.Plugins.InitMetaData
             }
 
             result.HasMetadata = true;
-
             return result;
         }
     }

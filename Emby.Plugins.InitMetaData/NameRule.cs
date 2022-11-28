@@ -48,6 +48,11 @@ namespace Emby.Plugins.InitMetaData
             return str.Replace(" - ", "第").Replace(" ", "集");
         }
 
+        public static string Replace07(string str)
+        {
+            return str.Replace("EP", "第")+ "集";
+        }
+
         public static string NoReplace(string str)
         {
             return str;
@@ -138,6 +143,9 @@ namespace Emby.Plugins.InitMetaData
             new INameRule(@" - [0-9][0-9] ", Replace06),
             new INameRule(@" -[0-9] ", Replace05),
             new INameRule(@" - [0-9] ", Replace06),
+
+            new INameRule(@"EP[0-9][0-9]", Replace07),
+            new INameRule(@"EP[0-9]", Replace07),
         };
     }
 }

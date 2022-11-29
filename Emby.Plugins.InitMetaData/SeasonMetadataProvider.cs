@@ -1,11 +1,8 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
+﻿using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,33 +29,10 @@ namespace Emby.Plugins.InitMetaData
                     MetadataFields.Name,
                     MetadataFields.SortName,
                 };
-            
-            if(result.Item.BeforeMetadataRefresh(true))
-            {
-                result.Item.LockedFields = new MetadataFields[] {
-                    MetadataFields.Genres,
-                    MetadataFields.Tags,
-                };
-
-                Logger.Info("測試1" + info.Name);
-                Logger.Info("測試1" + info.Id.ToString());
-
-                string[] s = info.Path.Split('\\');
-
-                if (s.Length == 1)
-                {
-                    s = info.Path.Split('/');
-                }
-
-                string newName = s[s.Length - 1];
-                result.Item.Name = newName;
-
-                return result;
-            }
 
             if (string.IsNullOrEmpty(info.Path))
             {
-                result.Item.SeriesName = "全集";
+                result.Item.Name = "全集";
             } 
             else
             {
@@ -70,49 +44,55 @@ namespace Emby.Plugins.InitMetaData
                 }
 
                 string newName = s[s.Length - 1];
+                newName = RemovePrefix(newName);
 
-                newName = newName.Replace("season", "");
-                newName = newName.Replace("s", "");
-                newName = newName.Replace("S", "");
-                
-                string[] newNames = newName.Split('(');
-                if (Regex.IsMatch(newNames[0], @"^ [0-99]") || Regex.IsMatch(newNames[0], @"^[0-99]"))
-                {
-                    Logger.Info(info.Name);
-                    Logger.Info(info.Id.ToString());
+                result.Item.Name = GetSeasonName(newName);
+                result.Item.SortName = GetSortName(newName);
 
-
-                    string[] n = newNames[0].Trim(' ').Split('-');
-                    string newItemName = "第 " + n[0] + " 季";
-
-                    for (int i = 1; i < n.Length; i++)
-                    {
-                        newItemName += (" " + n[i]);
-                    }
-
-                    result.BaseItem.Name = newItemName;
-                    result.Item.Name = newItemName;
-                    result.Item.SortName = newNames[0];
-                }
-                else
-                {
-                    
-                    result.Item.Name = newNames[0].Trim(' ');
-                    result.Item.SortName = newNames[0].Trim(' ');
-                }
-
-                string[] tags = newNames.Skip(1).ToArray();
-
-                for(int i = 0; i < tags.Length; i++)
-                {
-                    string t = tags[i].Replace("(", "").Replace(")", "");
-                    string[] ts = t.Split(' ');
-                    result.Item.SetTags(ts);
-                }
+                string[] tags = Utils.GetTag(newName);
+                result.Item.SetTags(tags);
             }
 
             result.HasMetadata = true;
             return result;
+        }
+
+        public string RemovePrefix (string val) {
+            string newVal = val;
+
+            if(Regex.IsMatch(newVal, @"^season", RegexOptions.IgnoreCase))
+            {
+                newVal = Regex.Replace(newVal, @"^season", "", RegexOptions.IgnoreCase);
+            }
+            else if (Regex.IsMatch(newVal, @"^s " , RegexOptions.IgnoreCase))
+            {
+                newVal = Regex.Replace(newVal, @"^s ", "", RegexOptions.IgnoreCase);
+            }
+
+            return newVal;
+        }
+
+        public string GetSeasonName(string val)
+        {
+            string newVal = val.Split('(')[0].Trim(' ');
+
+            if (Regex.IsMatch(newVal, @"^[0-9]"))
+            {
+                string[] v = newVal.Split(' ');
+                newVal = "第 " + v[0] + " 季";
+
+                for (int i = 1; i < v.Length; i++)
+                {
+                    newVal += (" " + v[i]);
+                }
+            }
+
+            return newVal;
+        }
+
+        public string GetSortName (string val)
+        {
+            return val.Split('(')[0].Trim(' ');
         }
     }
 }

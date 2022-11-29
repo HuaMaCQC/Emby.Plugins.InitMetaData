@@ -4,6 +4,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,21 +38,19 @@ namespace Emby.Plugins.InitMetaData
             }
 
             string newName = s[s.Length - 1];
-            string[] newNames = newName.Split('(');
-            result.Item.Name = newNames[0].Trim(' ');
-            
-            string[] tags = newNames.Skip(1).ToArray();
+            result.Item.Name = GetName(newName);
+            string[] tags = Utils.GetTag(newName);
 
-            for (int i = 0; i < tags.Length; i++)
-            {
-                string t = tags[i].Replace("(", "").Replace(")", "");
-                string[] ts = t.Split(' ');
-                result.Item.SetTags(ts);
-            }
-
-            result.Item.Genres = new string[0];
+            result.Item.SetTags(tags);
+            result.Item.SetGenres(new string[0]);
             result.HasMetadata = true;
+
             return result;
+        }
+
+        public string GetName(string val)
+        {
+            return Regex.Replace(val, @"\(.*\)", "").Trim(' ');
         }
     }
 }

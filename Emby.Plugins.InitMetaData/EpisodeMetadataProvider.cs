@@ -10,20 +10,15 @@ using System.Threading.Tasks;
 
 namespace Emby.Plugins.InitMetaData
 {
-
-    public abstract class IRule
-    {
-        public abstract string Rule();
-        public abstract string MyReplac(string str);
-    }
-
-    public class ItemMetadataProvider : ILocalMetadataProvider<Episode>
+    public class EpisodeMetadataProvider : ILocalMetadataProvider<Episode> 
     {
         public readonly ILogger Logger;
         public string Name => ProviderNames.Name;
-        public ItemMetadataProvider(ILogManager logManager)
+        public readonly ItemLookupInfo mySeasonInfo;
+        public EpisodeMetadataProvider(ILogManager logManager, SeasonInfo SeasonInfo)
         {
             Logger = logManager.GetLogger(Name);
+            mySeasonInfo = SeasonInfo;
         }
 
         public async Task<MetadataResult<Episode>> GetMetadata(ItemInfo info, LibraryOptions libraryOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
@@ -47,8 +42,9 @@ namespace Emby.Plugins.InitMetaData
 
             string newName = s[s.Length - 1];
 
+            string newItemName = GetName(newName);
             result.HasMetadata = true;
-            result.Item.Name = GetName(newName);
+            result.Item.Name = newItemName;
 
             for (int i = 0; i < StudioRule.Rule.Length; i++)
             {
@@ -66,16 +62,16 @@ namespace Emby.Plugins.InitMetaData
             string NewName = name;
             NewName = NewName.Split('.')[0];
 
-            for (int i = 0; i < NameRule.Rule.Length; i++)
+            for (int i = 0; i < EpisodeNameRule.Rule.Length; i++)
             {
-                if (Regex.IsMatch(name, NameRule.Rule[i].Regular))
+                if (Regex.IsMatch(name, EpisodeNameRule.Rule[i].Regular))
                 {
-                    Regex r = new Regex(NameRule.Rule[i].Regular, RegexOptions.IgnoreCase);
+                    Regex r = new Regex(EpisodeNameRule.Rule[i].Regular, RegexOptions.IgnoreCase);
                     Match m = r.Match(name);
 
                     if (!string.IsNullOrEmpty(m.Groups[0].ToString()))
                     {
-                        return NameRule.Rule[i].Replace(m.Groups[0].ToString());
+                        return EpisodeNameRule.Rule[i].Replace(m.Groups[0].ToString());
                     }
                 }
             };

@@ -44,12 +44,14 @@ namespace Emby.Plugins.InitMetaData
                 }
 
                 string newName = s[s.Length - 1];
-                newName = RemovePrefix(newName);
 
-                result.Item.Name = GetSeasonName(newName);
-                result.Item.SortName = GetSortName(newName);
+                newName = SeasonNameRule.RemovePrefix(newName);
 
-                string[] tags = Utils.GetTag(newName);
+                result.Item.Name = SeasonNameRule.GetSeasonName(newName);
+                result.Item.SortName = SeasonNameRule.GetSortName(newName);
+                result.Item.IndexNumber = GetIndexNumber(newName);
+
+                string[] tags = TagRule.GetTag(newName);
                 result.Item.SetTags(tags);
             }
 
@@ -57,42 +59,18 @@ namespace Emby.Plugins.InitMetaData
             return result;
         }
 
-        public string RemovePrefix (string val) {
-            string newVal = val;
-
-            if(Regex.IsMatch(newVal, @"^season", RegexOptions.IgnoreCase))
-            {
-                newVal = Regex.Replace(newVal, @"^season", "", RegexOptions.IgnoreCase);
-            }
-            else if (Regex.IsMatch(newVal, @"^s " , RegexOptions.IgnoreCase))
-            {
-                newVal = Regex.Replace(newVal, @"^s ", "", RegexOptions.IgnoreCase);
-            }
-
-            return newVal;
-        }
-
-        public string GetSeasonName(string val)
+        int? GetIndexNumber(string name)
         {
-            string newVal = val.Split('(')[0].Trim(' ');
+            string[] n = name.Trim(' ').Split(' ');
 
-            if (Regex.IsMatch(newVal, @"^[0-9]"))
+            int index = int.Parse(n[0]);
+
+            if (n.Length > 1)
             {
-                string[] v = newVal.Split(' ');
-                newVal = "第 " + v[0] + " 季";
-
-                for (int i = 1; i < v.Length; i++)
-                {
-                    newVal += (" " + v[i]);
-                }
+                index = index * 10;
             }
 
-            return newVal;
-        }
-
-        public string GetSortName (string val)
-        {
-            return val.Split('(')[0].Trim(' ');
+            return index;
         }
     }
 }

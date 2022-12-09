@@ -39,7 +39,7 @@ namespace Emby.Plugins.InitMetaData
 
             string newName = s[s.Length - 1];
             result.Item.Name = GetName(newName);
-            string[] tags = Utils.GetTag(newName);
+            string[] tags = TagRule.GetTag(newName);
 
             result.Item.SetTags(tags);
             result.Item.SetGenres(new string[0]);

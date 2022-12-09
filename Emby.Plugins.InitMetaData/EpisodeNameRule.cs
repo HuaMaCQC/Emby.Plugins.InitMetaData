@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Emby.Plugins.InitMetaData
 {
@@ -17,7 +15,7 @@ namespace Emby.Plugins.InitMetaData
         }
     }
 
-    public class NameRule
+    public class EpisodeNameRule
     {
         public static string BasicReplace(string str)
         {
@@ -56,6 +54,11 @@ namespace Emby.Plugins.InitMetaData
         public static string NoReplace(string str)
         {
             return str;
+        }
+
+        public static string Replace08(string str)
+        {
+            return str.Replace(" ", "第").Replace(" ", "集");
         }
 
         // 會依序檢查 所以規則越嚴格 請放越上面
@@ -138,6 +141,9 @@ namespace Emby.Plugins.InitMetaData
             new INameRule(@"\[Information-[A-Za-z0-9]+\]", Replace04),
             new INameRule(@"\[InformationA-Za-z0-9]+\]", Replace04),
 
+            new INameRule(@"\[[0-9][0-9][0-9][0-9]\]", BasicReplace),
+            new INameRule(@"\[[0-9][0-9][0-9][0-9]\]", BasicReplace),
+
             new INameRule(@"\[[0-9]\]", BasicReplace),
             new INameRule(@" -[0-9][0-9] ", Replace05),
             new INameRule(@" - [0-9][0-9] ", Replace06),
@@ -146,6 +152,8 @@ namespace Emby.Plugins.InitMetaData
 
             new INameRule(@"EP[0-9][0-9]", Replace07),
             new INameRule(@"EP[0-9]", Replace07),
+
+            new INameRule(@" [0-9][0-9] ", Replace08),
         };
     }
 }

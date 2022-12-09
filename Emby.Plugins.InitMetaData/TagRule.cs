@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Emby.Plugins.InitMetaData
 {
-    public static class Utils
+    public static class TagRule
     {
         public static string[] GetTag(string val)
         {

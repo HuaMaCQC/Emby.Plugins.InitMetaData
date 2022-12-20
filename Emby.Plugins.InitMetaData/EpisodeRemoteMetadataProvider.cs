@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
@@ -23,32 +24,16 @@ namespace Emby.Plugins.InitMetaData
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Episode>();
-
             result.Item = new Episode();
             result.HasMetadata = true;
-            result.Item.IndexNumber = GetIndexNumber(info.Name);
             result.Item.ParentIndexNumber = info.ParentIndexNumber;
 
-            Logger.Info("繼承上層 季: :" + info.ParentIndexNumber.ToString());
-
-            return result;
-        }
-
-        int? GetIndexNumber(string episodeName)
-        {
-            if (Regex.IsMatch(episodeName, @"第[0-9].集"))
+            if(info.IndexNumberEnd != null)
             {
-                Regex r = new Regex(@"[0-9].", RegexOptions.IgnoreCase);
-                Match m = r.Match(episodeName);
-
-                if (!string.IsNullOrEmpty(m.Groups[0].ToString()))
-                {
-                    Logger.Info("繼承上層 集:" + m.Groups[0].ToString());
-                    return int.Parse(m.Groups[0].ToString());
-                }
+                result.Item.IndexNumberEnd = 1;
             }
 
-            return null;
+            return result;
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)

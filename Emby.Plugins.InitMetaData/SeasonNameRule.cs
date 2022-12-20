@@ -11,7 +11,7 @@ namespace Emby.Plugins.InitMetaData
         {
             string newVal = val.Split('(')[0].Trim(' ');
 
-            if (Regex.IsMatch(newVal, @"^[0-9]."))
+            if (Regex.IsMatch(newVal, @"^[0-9]{1,2}"))
             {
                 string[] v = newVal.Split(' ');
                 newVal = "第 " + v[0] + " 季";
@@ -31,7 +31,7 @@ namespace Emby.Plugins.InitMetaData
 
             if (Regex.IsMatch(newVal, @"^season ", RegexOptions.IgnoreCase))
             {
-                newVal = Regex.Replace(newVal, @"^season", "", RegexOptions.IgnoreCase).Trim(' ');
+                newVal = Regex.Replace(newVal, @"^season ", "", RegexOptions.IgnoreCase).Trim(' ');
             }
             else if (Regex.IsMatch(newVal, @"^s ", RegexOptions.IgnoreCase))
             {

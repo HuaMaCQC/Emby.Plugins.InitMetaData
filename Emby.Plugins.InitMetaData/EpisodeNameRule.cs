@@ -58,7 +58,7 @@ namespace Emby.Plugins.InitMetaData
 
         public static string Replace08(string str)
         {
-            return str.Replace(" ", "第").Replace(" ", "集");
+            return "第" + str.Trim(' ') + "集";
         }
 
         // 會依序檢查 所以規則越嚴格 請放越上面

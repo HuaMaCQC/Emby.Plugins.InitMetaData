@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
+﻿using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -28,10 +27,8 @@ namespace Emby.Plugins.InitMetaData
             result.Item.LockedFields = new MetadataFields[] {
                     MetadataFields.Genres,
                     MetadataFields.Tags,
-                    MetadataFields.Name,
-                    MetadataFields.SortName,
                     MetadataFields.Studios,
-                };
+            };
 
             string[] s = info.Path.Split('\\');
 
@@ -41,10 +38,13 @@ namespace Emby.Plugins.InitMetaData
             }
 
             string newName = s[s.Length - 1];
-
             string newItemName = GetName(newName);
-            result.HasMetadata = true;
-            result.Item.Name = newItemName;
+
+            if(!string.IsNullOrEmpty(newItemName))
+            {
+                result.Item.Name = newItemName;
+                result.Item.IndexNumber = GetIndexNumber(newItemName);
+            }
 
             for (int i = 0; i < StudioRule.Rule.Length; i++)
             {
@@ -54,17 +54,34 @@ namespace Emby.Plugins.InitMetaData
                 }
             }
 
+            result.HasMetadata = true;
+
             return result;
+        }
+
+        int? GetIndexNumber(string episodeName)
+        {
+            if (Regex.IsMatch(episodeName, @"[0-9]{1,5}"))
+            {
+                Regex r = new Regex(@"[0-9]{1,5}", RegexOptions.IgnoreCase);
+                Match m = r.Match(episodeName);
+
+                if (!string.IsNullOrEmpty(m.Groups[0].ToString()))
+                {
+                    string n = m.Groups[0].ToString();
+
+                    return int.Parse(n);
+                }
+            }
+
+            return null;
         }
 
         string GetName(string name)
         {
-            string NewName = name;
-            NewName = NewName.Split('.')[0];
-
             for (int i = 0; i < EpisodeNameRule.Rule.Length; i++)
             {
-                if (Regex.IsMatch(name, EpisodeNameRule.Rule[i].Regular))
+                if (Regex.IsMatch(name, EpisodeNameRule.Rule[i].Regular, RegexOptions.IgnoreCase))
                 {
                     Regex r = new Regex(EpisodeNameRule.Rule[i].Regular, RegexOptions.IgnoreCase);
                     Match m = r.Match(name);
@@ -76,7 +93,7 @@ namespace Emby.Plugins.InitMetaData
                 }
             };
 
-            return NewName;
+            return null;
         }
     }
 }
